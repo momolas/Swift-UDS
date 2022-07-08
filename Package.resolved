@@ -1,0 +1,61 @@
+{
+  "object": {
+    "pins": [
+      {
+        "package": "BitByteData",
+        "repositoryURL": "https://github.com/tsolomko/BitByteData",
+        "state": {
+          "branch": null,
+          "revision": "c119e12decae8f56066df3345a4ac1a05b2f06d5",
+          "version": "2.0.1"
+        }
+      },
+      {
+        "package": "CornucopiaCore",
+        "repositoryURL": "https://github.com/Cornucopia-Swift/CornucopiaCore",
+        "state": {
+          "branch": "master",
+          "revision": "d86af27ef2e8f8e39ab79b184275691fa7a4c707",
+          "version": null
+        }
+      },
+      {
+        "package": "CornucopiaStreams",
+        "repositoryURL": "https://github.com/Cornucopia-Swift/CornucopiaStreams",
+        "state": {
+          "branch": "master",
+          "revision": "40f7364094f507f4f8fae75aa3500583025b774f",
+          "version": null
+        }
+      },
+      {
+        "package": "SWCompression",
+        "repositoryURL": "https://github.com/tsolomko/SWCompression",
+        "state": {
+          "branch": null,
+          "revision": "0ff80e30b6131df515601d698e007e18809431c5",
+          "version": "4.7.0"
+        }
+      },
+      {
+        "package": "swift-argument-parser",
+        "repositoryURL": "https://github.com/apple/swift-argument-parser",
+        "state": {
+          "branch": null,
+          "revision": "e1465042f195f374b94f915ba8ca49de24300a0d",
+          "version": "1.0.2"
+        }
+      },
+      {
+        "package": "swift-crypto",
+        "repositoryURL": "https://github.com/apple/swift-crypto.git",
+        "state": {
+          "branch": null,
+          "revision": "3bea268b223651c4ab7b7b9ad62ef9b2d4143eb6",
+          "version": "1.1.6"
+        }
+      }
+    ]
+  },
+  "version": 1
+}

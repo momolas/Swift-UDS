@@ -11,7 +11,6 @@ let package = Package(
         .iOS(.v15),
         .tvOS(.v15),
         .watchOS(.v8),
-        //.linux
     ],
     products: [
         .library(name: "Swift-UDS", targets: ["Swift-UDS"]),
@@ -30,10 +29,12 @@ let package = Package(
         // Targets can depend on other targets in this package, and on products in packages this package depends on.
         .target(name: "Swift-UDS", dependencies: [
             "CornucopiaCore"
+            "CornucopiaStreams"
         ]),
         .target(name: "Swift-UDS-Adapter", dependencies: [
             "Swift-UDS",
             "CornucopiaCore"
+            "CornucopiaStreams"
         ]),
         .target(name: "Swift-UDS-Session", dependencies: [
             "Swift-UDS-Adapter"

@@ -14,5 +14,4 @@ struct Example: ParsableCommand {
         @Argument(help: "The URL to the adapter.")
         var url: String
     }
-
 }

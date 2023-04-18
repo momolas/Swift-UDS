@@ -35,7 +35,6 @@ struct OBD2: ParsableCommand {
                 print("Can't connect to adapter via '\(url)': \(error)")
                 x = -1
             }
-
         }
         while true {
             if let x = x {

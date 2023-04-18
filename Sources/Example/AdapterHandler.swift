@@ -23,7 +23,6 @@ class AdapterConnector {
     }
 
     init(url: String) throws {
-
         guard let url = URL(string: url) else { throw Error.invalidUrl }
         guard let _ = url.scheme else { throw Error.invalidUrl }
         self.url = url
@@ -37,7 +36,6 @@ class AdapterConnector {
     }
 
     func connectedAdapter(via: UDS.BusProtocol) async throws -> UDS.BaseAdapter {
-
         let streams = try await Stream.CC_getStreamPair(to: self.url)
         let adapter: UDS.BaseAdapter
         switch self.url.scheme {
@@ -56,7 +54,6 @@ class AdapterConnector {
 extension AdapterConnector {
 
     @objc func onAdapterCanInitHardware() {
-
         // Reset the UART speed (necessary on macOS) after opening the stream
         if url.scheme == "tty" {
             print("fixing up UART")
@@ -69,12 +66,10 @@ extension AdapterConnector {
     }
 
     @objc func onAdapterDidUpdateState(n: Notification) {
-
         guard let adapter = n.object as? UDS.BaseAdapter, adapter == self.adapter else { return }
         guard let continuation = self.continuation else { return }
 
         switch adapter.state {
-
             case .connected(_, _):
                 continuation.resume(returning: adapter)
             case .notFound:

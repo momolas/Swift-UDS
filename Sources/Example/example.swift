@@ -10,7 +10,6 @@ struct Example: ParsableCommand {
     )
 
     struct Options: ParsableArguments {
-
         @Argument(help: "The URL to the adapter.")
         var url: String
     }

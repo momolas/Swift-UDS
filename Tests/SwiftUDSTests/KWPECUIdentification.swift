@@ -50,4 +50,15 @@ final class KWPECUIdentification: XCTestCase {
         let asciiIdentifiers = ecuIdentifiers.filter { $0.type == .ascii }
         XCTAssertEqual(asciiIdentifiers.count, 10)
     }
+
+    func testParseLongerThan15Bytes() throws {
+
+        let dataTable = "THIS IS A VERY LONG STRING".data(using: .ascii)!
+        let scalingTable: [UInt8] = [0x04, 0xA0, 0x60, 0x19, 0xFF]
+
+        let ecuIdentifiers = try UDS.KWP.ECUIdentificationEntry.createFrom(dataTable: Array(dataTable), scalingTable: scalingTable)
+        XCTAssertEqual(ecuIdentifiers.count, 1)
+        XCTAssertEqual(ecuIdentifiers[0].option, 0xA0)
+        XCTAssertEqual(ecuIdentifiers[0].data.CC_asciiDecodedString, "THIS IS A VERY LONG STRING")
+    }
 }

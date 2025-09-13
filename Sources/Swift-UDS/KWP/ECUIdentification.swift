@@ -56,10 +56,19 @@ public extension UDS.KWP {
                 var payload: [UInt8] = []
                 var dataTypes: Set<ScalingDataType> = .init()
 
-                forLoop: for formatByte in scalingTable[scalingIndex.advanced(by: 2)..<scalingIndex.advanced(by: nextOffset)] {
+                var scalingEntryIndex = scalingIndex.advanced(by: 2)
+                formatLoop: while scalingEntryIndex < scalingIndex.advanced(by: nextOffset) {
+                    let formatByte = scalingTable[scalingEntryIndex]
                     logger.trace("handling format byte \(formatByte, radix: .hex, prefix: true, toWidth: 2) in option \(option, radix: .hex, prefix: true, toWidth: 2)")
                     let dataType = ScalingDataType(rawValue: formatByte >> 4)!
-                    let dataLength = Int(formatByte & 0xF)
+                    var dataLength = Int(formatByte & 0xF)
+                    scalingEntryIndex = scalingEntryIndex.advanced(by: 1)
+
+                    if dataLength == 0 {
+                        dataLength = Int(scalingTable[scalingEntryIndex])
+                        scalingEntryIndex = scalingEntryIndex.advanced(by: 1)
+                    }
+
                     let payloadSlice = dataTable[dataIndex..<dataIndex.advanced(by: dataLength)]
                     dataTypes.insert(dataType)
                     switch dataType {
@@ -68,7 +77,7 @@ public extension UDS.KWP {
 
                         case .formula:
                             logger.trace("formula found, skipping the rest for now")
-                            break forLoop
+                            break formatLoop
 
                         default:
                             logger.trace("unhandled data type '\(dataType)'")

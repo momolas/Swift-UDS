@@ -26,4 +26,10 @@ final class SwiftUDSTests: XCTestCase {
         let payload = service.payload
         XCTAssertEqual(payload, [0x2E, 0x56, 0x78, 0xDE, 0xAD, 0xBE, 0xEF], "The payload for writeDataByIdentifier is incorrect.")
     }
+
+    func testRequestUploadPayload() {
+        let service = UDS.Service.requestUpload(compression: 0, encryption: 0, address: [0x12, 0x34], length: [0x56, 0x78])
+        let payload = service.payload
+        XCTAssertEqual(payload, [0x35, 0x00, 0x22, 0x12, 0x34, 0x56, 0x78], "The payload for requestUpload is incorrect.")
+    }
 }

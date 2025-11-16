@@ -106,10 +106,14 @@ extension UDS {
         /// Send a UDS message and return one.
         public override func sendUDS(_ message: UDS.Message) async throws -> UDS.Message {
             
+            guard let busProtocolEncoder = self.busProtocolEncoder, let busProtocolDecoder = self.busProtocolDecoder else {
+                throw UDS.Error.internal
+            }
+
             let sid = self.canAutoFormat ? message.bytes[0] : message.bytes[1]
 
             var requestMessage = message
-            requestMessage.bytes = try self.busProtocolEncoder!.encode(message.bytes)
+            requestMessage.bytes = try busProtocolEncoder.encode(message.bytes)
             let theSendRaw = ( requestMessage.bytes.count > 8 ) && ( self.icType == .stn11xx || self.icType == .stn22xx ) ? self.stnSendRaw : self.sendRaw
 
             let responseMessages = try await theSendRaw(requestMessage)
@@ -134,7 +138,7 @@ The presence of an unexpected frame might indicate a problem with your OBD2 adap
             responses.forEach { response in
                 bytes += response.bytes
             }
-            bytes = try self.busProtocolDecoder!.decode(bytes)
+            bytes = try busProtocolDecoder.decode(bytes)
             let assembled: UDS.Message = .init(id: responses.first!.id, bytes: bytes)
             return assembled
         }

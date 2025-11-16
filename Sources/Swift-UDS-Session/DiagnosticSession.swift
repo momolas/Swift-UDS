@@ -107,6 +107,12 @@ extension UDS {
             try await self.request(service: .requestDownload(compression: compression, encryption: encryption, address: address, length: length))
         }
         
+        /// Initiate a block transfer (ECU -> TESTER)
+        @discardableResult
+        public func requestUpload(compression: UInt8, encryption: UInt8, address: [UInt8], length: [UInt8]) async throws -> UDS.GenericResponse {
+            try await self.request(service: .requestUpload(compression: compression, encryption: encryption, address: address, length: length))
+        }
+
         /// Trigger a routine
         @discardableResult
         public func routineControl(type: UDS.RoutineControlType, identifier: UDS.RoutineIdentifier, optionRecord: DataRecord = []) async throws -> UDS.GenericResponse {

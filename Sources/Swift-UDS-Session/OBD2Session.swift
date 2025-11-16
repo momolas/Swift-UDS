@@ -35,19 +35,35 @@ extension UDS {
             return response.dtc
         }
         
-        /// Read a `String` value via the given `service`.
-        public func readString(service: UDS.Service) async throws -> String {
-            let response: OBD2Response = try await request(service: service)
-            guard response.valueType == .string else { throw UDS.Error.unexpectedResult(string: "Expected String, but got \(response.valueType)") }
-            return response.value! as! String
+        public func readVIN() async throws -> String {
+            try await self.readString(service: .vehicleInformation(pid: UDS.OBD2.VehicleInformation.vin.rawValue))
         }
 
-        /// Read a `Measurement` via the given `service`.
-        public func readMeasurement(service: UDS.Service) async throws -> Measurement<Unit> {
-            let response: OBD2Response = try await request(service: service)
-            guard response.valueType == .measurement else { throw UDS.Error.unexpectedResult(string: "Expected String, but got \(response.valueType)") }
-            return response.value! as! Measurement
+        public func readEngineRPM() async throws -> Measurement<Unit> {
+            try await self.readMeasurement(service: .currentData(pid: UDS.OBD2.CommonPids.engineRPM.rawValue))
         }
+
+        public func readVehicleSpeed() async throws -> Measurement<UnitSpeed> {
+            let measurement: Measurement<Unit> = try await self.readMeasurement(service: .currentData(pid: UDS.OBD2.CommonPids.vehicleSpeed.rawValue))
+            return measurement.converted(to: .kilometersPerHour)
+        }
+    }
+}
+
+private extension UDS.OBD2Session {
+
+    /// Read a `String` value via the given `service`.
+    func readString(service: UDS.Service) async throws -> String {
+        let response: UDS.OBD2Response = try await request(service: service)
+        guard response.valueType == .string else { throw UDS.Error.unexpectedResult(string: "Expected String, but got \(response.valueType)") }
+        return response.value! as! String
+    }
+
+    /// Read a `Measurement` via the given `service`.
+    func readMeasurement(service: UDS.Service) async throws -> Measurement<Unit> {
+        let response: UDS.OBD2Response = try await request(service: service)
+        guard response.valueType == .measurement else { throw UDS.Error.unexpectedResult(string: "Expected Measurement, but got \(response.valueType)") }
+        return response.value! as! Measurement<Unit>
     }
 }
 

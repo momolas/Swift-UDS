@@ -14,10 +14,6 @@ public extension UDS {
             case custom
         }
 
-        public enum VehicleInformation: UInt8 {
-            case vin = 0x02
-        }
-
         public enum CommonPids: UInt8 {
             case engineCoolantTemperature = 0x05
             case engineRPM = 0x0C

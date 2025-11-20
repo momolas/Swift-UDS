@@ -44,6 +44,12 @@ let package = Package(
             "CornucopiaStreams",
             .product(name: "ArgumentParser", package: "swift-argument-parser")
         ]),
+        .executableTarget(name: "UDSFuzzer", dependencies: [
+            "Swift-UDS",
+            "Swift-UDS-Adapter",
+            "Swift-UDS-Session",
+            "CornucopiaStreams"
+        ]),
         .testTarget(name: "SwiftUDSTests", dependencies: [
             "CornucopiaCore",
             "Swift-UDS"

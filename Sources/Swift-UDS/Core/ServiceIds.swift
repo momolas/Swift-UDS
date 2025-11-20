@@ -226,7 +226,7 @@ extension UDS {
         public static let pids_20_3F                                 : UInt8 = 0x20
 
         public static let pids_40_5F                                 : UInt8 = 0x40
-        public static let fuelType                                   : UInt8 = 0x52
+        public static let fuelType                                   : UInt8 = 0x51
 
         public static let pids_60_7F                                 : UInt8 = 0x60
         public static let pids_80_9F                                 : UInt8 = 0x80

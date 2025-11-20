@@ -22,4 +22,11 @@ public extension UDS {
     typealias TransferAddress = [UInt8]
     typealias TransferLength = [UInt8]
     typealias TransferRequestParameterRecord = [UInt8]
+
+    enum InputOutputControlOption: UInt8 {
+        case returnControlToECU     = 0x00
+        case resetToDefault         = 0x01
+        case freezeCurrentState     = 0x02
+        case shortTermAdjustment    = 0x03
+    }
 }

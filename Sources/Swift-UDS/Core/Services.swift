@@ -28,8 +28,11 @@ public extension UDS {
         case dynamicallyDefineDataIdentifier(id: DataIdentifier, byIdentifier: DataIdentifier, position: PositionInRecord, length: MemorySize)
         case diagnosticSessionControl(session: DiagnosticSessionType)
         case ecuReset(type: EcuResetType)
+        case inputOutputControlByIdentifier(id: DataIdentifier, option: InputOutputControlOption, controlState: DataRecord)
         case readDataByIdentifier(id: DataIdentifier)
+        case readDataByLocalIdentifier(id: UInt8)
         case readDTCByStatusMask(mask: DTC.StatusMask)
+        case readMemoryByAddress(address: TransferAddress, size: TransferLength)
         case requestDownload(compression: Compression, encryption: Encryption, address: TransferAddress, length: TransferLength)
         case requestUpload(compression: Compression, encryption: Encryption, address: TransferAddress, length: TransferLength)
         case requestTransferExit(trpr: DataRecord = [])
@@ -39,6 +42,7 @@ public extension UDS {
         case testerPresent(type: TesterPresentType)
         case transferData(bsc: BlockSequenceCounter, trpr: DataRecord)
         case writeDataByIdentifier(id: DataIdentifier, drec: DataRecord)
+        case writeMemoryByAddress(address: TransferAddress, size: TransferLength, data: DataRecord)
 
         public var payload: [UInt8] {
 
@@ -110,13 +114,27 @@ public extension UDS {
                 case .ecuReset(type: let type):
                     return [UDS.ServiceId.ecuReset, type.rawValue]
 
+                case .inputOutputControlByIdentifier(id: let id, option: let option, controlState: let controlState):
+                    let idhi = UInt8(id >> 8 & 0xff)
+                    let idlo = UInt8(id & 0xff)
+                    return [UDS.ServiceId.inputOutputControlByIdentifier, idhi, idlo, option.rawValue] + controlState
+
                 case .readDataByIdentifier(id: let id):
                     let idhi = UInt8(id >> 8 & 0xff)
                     let idlo = UInt8(id & 0xff)
                     return [UDS.ServiceId.readDataByIdentifier, idhi, idlo]
 
+                case .readDataByLocalIdentifier(id: let id):
+                    return [UDS.ServiceId.kwpReadDataByLocalIdentifier, id]
+
                 case .readDTCByStatusMask(let mask):
                     return [UDS.ServiceId.readDTCInformation, UDS.ReadDTCReportType.reportDTCByStatusMask.rawValue, mask.rawValue]
+
+                case .readMemoryByAddress(address: let address, size: let size):
+                    guard address.count < 0x10 else { return [] }
+                    guard size.count < 0x10 else { return [] }
+                    let alfid: UDS.AddressAndLengthFormatIdentifier = ((UInt8(size.count) & 0x0F) << 4) | (UInt8(address.count) & 0x0F)
+                    return [UDS.ServiceId.readMemoryByAddress, alfid] + address + size
 
                 case .requestDownload(compression: let compression, encryption: let encryption, address: let address, length: let length):
                     guard compression < 0x10 else { return [] }
@@ -163,6 +181,12 @@ public extension UDS {
                     let idhi = UInt8(id >> 8 & 0xff)
                     let idlo = UInt8(id & 0xff)
                     return [UDS.ServiceId.writeDataByIdentifier, idhi, idlo] + drec
+
+                case .writeMemoryByAddress(address: let address, size: let size, data: let data):
+                    guard address.count < 0x10 else { return [] }
+                    guard size.count < 0x10 else { return [] }
+                    let alfid: UDS.AddressAndLengthFormatIdentifier = ((UInt8(size.count) & 0x0F) << 4) | (UInt8(address.count) & 0x0F)
+                    return [UDS.ServiceId.writeMemoryByAddress, alfid] + address + size + data
             }
         }
     }

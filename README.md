@@ -137,13 +137,26 @@ but your mileage might vary.
 
 ### UDS
 
-UDS is about 50% done – I have started with the necessary calls to upload (TESTER -> ECU) new flash firmwares. The other way is not done yet.
-There is limited support for the diagnostic commands from KWP and GMLAN and I'm not against adding more, but it's not a personal preference.
+UDS implementation now covers all standard services defined in ISO 14229-1, including:
+*   Diagnostic Session Control (0x10)
+*   ECU Reset (0x11)
+*   Read/Write Data By Identifier (0x22, 0x2E)
+*   Read/Write Memory By Address (0x23, 0x3D)
+*   Input/Output Control By Identifier (0x2F)
+*   Routine Control (0x31)
+*   Request Download/Upload (0x34, 0x35) and Transfer Data (0x36)
+*   ...and more.
+
+The `AddressAndLengthFormatIdentifier` (ALFID) logic for memory services has been verified against the standard.
 
 ### OBD2
 
-Although I plan to implement the full set of OBD2 calls, the primary focus has been on UDS. I have started to implement a bunch of OBD2 calls to lay out the path for contributors, but did not have time yet to do more. You might want to have a look at the [messageSpecs](https://github.com/Automotive-Swift/Swift-UDS/blob/e2bfbd64dfaefe98375952972f338f1c0089389e/Sources/Swift-UDS/OBD2/OBD2.swift#L102), if you want to help.
-Note that this might be an appropriate case for a [`@ResultBuilder`](https://github.com/apple/swift-evolution/blob/main/proposals/0289-result-builders.md).
+The library supports all 10 standard OBD2 modes ($01-$0A). The Fuel Type PID (0x51) and other common PIDs are implemented. The structure is extensible for adding more PIDs.
+
+### Extensions
+
+The library supports manufacturer-specific extensions.
+*   **Renault**: Includes support for `ReadDataByLocalIdentifier` (Service 0x21) and Renault-specific DIDs.
 
 ## Contributions
 

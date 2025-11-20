@@ -124,7 +124,7 @@ public extension UDS {
                     let dfi: UDS.DataFormatIdentifier = ((compression & 0x0F) << 4) | (encryption & 0x0F)
                     guard address.count < 0x10 else { return [] }
                     guard length.count < 0x10 else { return [] }
-                    let alfid: UDS.AddressAndLengthFormatIdentifier = ((UInt8(address.count) & 0x0F) << 4) | (UInt8(length.count) & 0x0F)
+                    let alfid: UDS.AddressAndLengthFormatIdentifier = ((UInt8(length.count) & 0x0F) << 4) | (UInt8(address.count) & 0x0F)
                     return [UDS.ServiceId.requestDownload, dfi, alfid] + address + length
 
                 case .requestUpload(compression: let compression, encryption: let encryption, address: let address, length: let length):
@@ -133,7 +133,7 @@ public extension UDS {
                     let dfi: UDS.DataFormatIdentifier = ((compression & 0x0F) << 4) | (encryption & 0x0F)
                     guard address.count < 0x10 else { return [] }
                     guard length.count < 0x10 else { return [] }
-                    let alfid: UDS.AddressAndLengthFormatIdentifier = ((UInt8(address.count) & 0x0F) << 4) | (UInt8(length.count) & 0x0F)
+                    let alfid: UDS.AddressAndLengthFormatIdentifier = ((UInt8(length.count) & 0x0F) << 4) | (UInt8(address.count) & 0x0F)
                     return [UDS.ServiceId.requestUpload, dfi, alfid] + address + length
 
                 case .requestTransferExit(trpr: let tprp):

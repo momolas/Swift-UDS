@@ -18,7 +18,7 @@ public extension UDS.ISO9141 {
         
         /// Encode a byte stream by inserting the appropriate framing control bytes as per ISOTP
         public func encode(_ bytes: [UInt8]) throws -> [UInt8] {
-            throw UDS.Error.encoderError(string: "ISO9141 encoding not yet implemented")
+            return try UDS.ISOTP.Encoder().encode(bytes)
         }
     }
     

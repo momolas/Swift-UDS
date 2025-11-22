@@ -44,7 +44,12 @@ public extension UDS {
         case writeDataByIdentifier(id: DataIdentifier, drec: DataRecord)
         case writeMemoryByAddress(address: TransferAddress, size: TransferLength, data: DataRecord)
 
+        @available(*, deprecated, message: "Use validPayload() instead. This property returns an empty array on error, which is unsafe.")
         public var payload: [UInt8] {
+            return (try? self.validPayload()) ?? []
+        }
+
+        public func validPayload() throws -> [UInt8] {
 
             switch self {
                 //
@@ -131,26 +136,26 @@ public extension UDS {
                     return [UDS.ServiceId.readDTCInformation, UDS.ReadDTCReportType.reportDTCByStatusMask.rawValue, mask.rawValue]
 
                 case .readMemoryByAddress(address: let address, size: let size):
-                    guard address.count < 0x10 else { return [] }
-                    guard size.count < 0x10 else { return [] }
+                    guard address.count < 0x10 else { throw UDS.Error.malformedService }
+                    guard size.count < 0x10 else { throw UDS.Error.malformedService }
                     let alfid: UDS.AddressAndLengthFormatIdentifier = ((UInt8(size.count) & 0x0F) << 4) | (UInt8(address.count) & 0x0F)
                     return [UDS.ServiceId.readMemoryByAddress, alfid] + address + size
 
                 case .requestDownload(compression: let compression, encryption: let encryption, address: let address, length: let length):
-                    guard compression < 0x10 else { return [] }
-                    guard encryption < 0x10 else { return [] }
+                    guard compression < 0x10 else { throw UDS.Error.malformedService }
+                    guard encryption < 0x10 else { throw UDS.Error.malformedService }
                     let dfi: UDS.DataFormatIdentifier = ((compression & 0x0F) << 4) | (encryption & 0x0F)
-                    guard address.count < 0x10 else { return [] }
-                    guard length.count < 0x10 else { return [] }
+                    guard address.count < 0x10 else { throw UDS.Error.malformedService }
+                    guard length.count < 0x10 else { throw UDS.Error.malformedService }
                     let alfid: UDS.AddressAndLengthFormatIdentifier = ((UInt8(length.count) & 0x0F) << 4) | (UInt8(address.count) & 0x0F)
                     return [UDS.ServiceId.requestDownload, dfi, alfid] + address + length
 
                 case .requestUpload(compression: let compression, encryption: let encryption, address: let address, length: let length):
-                    guard compression < 0x10 else { return [] }
-                    guard encryption < 0x10 else { return [] }
+                    guard compression < 0x10 else { throw UDS.Error.malformedService }
+                    guard encryption < 0x10 else { throw UDS.Error.malformedService }
                     let dfi: UDS.DataFormatIdentifier = ((compression & 0x0F) << 4) | (encryption & 0x0F)
-                    guard address.count < 0x10 else { return [] }
-                    guard length.count < 0x10 else { return [] }
+                    guard address.count < 0x10 else { throw UDS.Error.malformedService }
+                    guard length.count < 0x10 else { throw UDS.Error.malformedService }
                     let alfid: UDS.AddressAndLengthFormatIdentifier = ((UInt8(length.count) & 0x0F) << 4) | (UInt8(address.count) & 0x0F)
                     return [UDS.ServiceId.requestUpload, dfi, alfid] + address + length
 
@@ -163,18 +168,18 @@ public extension UDS {
                     return [UDS.ServiceId.routineControl, type.rawValue, idhi, idlo] + rcor
 
                 case .securityAccessRequestSeed(level: let level):
-                    guard level < 0x7F && level % 2 == 1 else { return [] }
+                    guard level < 0x7F && level % 2 == 1 else { throw UDS.Error.malformedService }
                     return [UDS.ServiceId.securityAccess, level]
 
                 case .securityAccessSendKey(level: let level, key: let key):
-                    guard level < 0x7F && level % 2 == 0 else { return [] }
+                    guard level < 0x7F && level % 2 == 0 else { throw UDS.Error.malformedService }
                     return [UDS.ServiceId.securityAccess, level] + key
 
                 case .testerPresent(type: let type):
                     return [UDS.ServiceId.testerPresent, type.rawValue]
 
                 case .transferData(bsc: let bsc, trpr: let trpr):
-                    guard trpr.count <= ISOTP.MaximumDataTransferSize else { return [] }
+                    guard trpr.count <= ISOTP.MaximumDataTransferSize else { throw UDS.Error.malformedService }
                     return [UDS.ServiceId.transferData, bsc] + trpr
 
                 case .writeDataByIdentifier(id: let id, drec: let drec):
@@ -183,8 +188,8 @@ public extension UDS {
                     return [UDS.ServiceId.writeDataByIdentifier, idhi, idlo] + drec
 
                 case .writeMemoryByAddress(address: let address, size: let size, data: let data):
-                    guard address.count < 0x10 else { return [] }
-                    guard size.count < 0x10 else { return [] }
+                    guard address.count < 0x10 else { throw UDS.Error.malformedService }
+                    guard size.count < 0x10 else { throw UDS.Error.malformedService }
                     let alfid: UDS.AddressAndLengthFormatIdentifier = ((UInt8(size.count) & 0x0F) << 4) | (UInt8(address.count) & 0x0F)
                     return [UDS.ServiceId.writeMemoryByAddress, alfid] + address + size + data
             }

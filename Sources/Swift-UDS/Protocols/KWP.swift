@@ -6,7 +6,7 @@ import Foundation
 public extension UDS {
 
     enum KWP {
-        public static var HeaderLength: Int = "87F110".count
+        public static var HeaderLength: Int = 3 // "87F110" bytes
     }
 }
 

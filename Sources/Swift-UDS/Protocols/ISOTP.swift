@@ -25,7 +25,7 @@ public extension UDS.ISOTP {
             guard bytes.count > 0 else { throw UDS.Error.encoderError(string: "Message too small (0 bytes)") }
             guard bytes.count < UDS.ISOTP.MaximumFrameSize else { throw UDS.Error.encoderError(string: "Message too long. Maximum ISOTP payload is 4095 (0xFFF) bytes") }
             
-            let framedPayload = bytes.count < 7 ? self.encodeSingleFrame(payload: bytes) : self.encodeMultiFrame(payload: bytes)
+            let framedPayload = bytes.count <= 7 ? self.encodeSingleFrame(payload: bytes) : self.encodeMultiFrame(payload: bytes)
             return framedPayload
         }
         
@@ -190,7 +190,10 @@ public extension UDS.ISOTP {
         private var payload: [UInt8] = []
         /// The aggregated message.
         private var message: UDS.Message {
-            guard let first = self.messages.first else { fatalError("Message underflow") }
+            guard let first = self.messages.first else {
+                // This should not happen if logic is correct, but return a safe fallback to prevent crashes
+                return UDS.Message(id: 0, reply: 0, bytes: [])
+            }
             return UDS.Message(id: first.id, reply: first.reply, bytes: payload)
         }
         /// The individual messages.

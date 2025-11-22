@@ -25,7 +25,7 @@ public extension UDS.ISOTP {
             guard bytes.count > 0 else { throw UDS.Error.encoderError(string: "Message too small (0 bytes)") }
             guard bytes.count < UDS.ISOTP.MaximumFrameSize else { throw UDS.Error.encoderError(string: "Message too long. Maximum ISOTP payload is 4095 (0xFFF) bytes") }
             
-            let framedPayload = bytes.count < 7 ? self.encodeSingleFrame(payload: bytes) : self.encodeMultiFrame(payload: bytes)
+            let framedPayload = bytes.count <= 7 ? self.encodeSingleFrame(payload: bytes) : self.encodeMultiFrame(payload: bytes)
             return framedPayload
         }
         

@@ -190,7 +190,10 @@ public extension UDS.ISOTP {
         private var payload: [UInt8] = []
         /// The aggregated message.
         private var message: UDS.Message {
-            guard let first = self.messages.first else { fatalError("Message underflow") }
+            guard let first = self.messages.first else {
+                // This should not happen if logic is correct, but return a safe fallback to prevent crashes
+                return UDS.Message(id: 0, reply: 0, bytes: [])
+            }
             return UDS.Message(id: first.id, reply: first.reply, bytes: payload)
         }
         /// The individual messages.

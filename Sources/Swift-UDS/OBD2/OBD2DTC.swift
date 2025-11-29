@@ -33,7 +33,11 @@ public extension UDS.OBD2 {
 
         init(from bytes: [UInt8]) {
 
-            guard bytes.count == 2 else { fatalError() }
+            guard bytes.count == 2 else {
+                self.kind = .P
+                self.rawValue = "P0000"
+                return
+            }
             // conversion as per ISO 15031-6/SAE J2012-2007
             let A = bytes[0]
             let B = bytes[1]
@@ -43,7 +47,10 @@ public extension UDS.OBD2 {
                 case 0b01: self.kind = .C
                 case 0b10: self.kind = .B
                 case 0b11: self.kind = .U
-                default: fatalError()
+                default:
+                    self.kind = .P
+                    self.rawValue = "P0000"
+                    return
             }
             let secondCharacterValue = (A & 0b00110000) >> 4
             let thirdCharacterValue = A & 0x0F

@@ -45,8 +45,12 @@ private extension UDS.ISO9141.Decoder {
         
         for chunk in bytes.CC_chunked(size: 8) {
             let frame = chunk[2]
-            //FIXME: Should we check the checksum and filter invalid frames?
-            //let checksum = chunk[7]
+            let checksum = chunk[7]
+            let computedChecksum = chunk.dropLast().reduce(0, &+)
+            guard checksum == computedChecksum else {
+                throw UDS.Error.decoderError(string: "Checksum error in chunk \(chunk, radix: .hex, prefix: true, toWidth: 2). Expected \(computedChecksum, radix: .hex), got \(checksum, radix: .hex)")
+            }
+
             guard frame == expectedFrame else {
                 throw UDS.Error.decoderError(string: "Expected frame \(expectedFrame), but got \(frame) in chunk \(chunk, radix: .hex, prefix: true, toWidth: 2)")
             }

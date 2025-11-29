@@ -33,7 +33,8 @@ let package = Package(
         ]),
         .target(name: "Swift-UDS-Adapter", dependencies: [
             "Swift-UDS",
-            "CornucopiaCore"
+            "CornucopiaCore",
+            "CornucopiaStreams"
         ]),
         .target(name: "Swift-UDS-Session", dependencies: [
             "Swift-UDS-Adapter"

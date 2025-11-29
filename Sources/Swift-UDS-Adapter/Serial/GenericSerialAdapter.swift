@@ -2,6 +2,7 @@
 // Swift-UDS. (C) Dr. Michael 'Mickey' Lauer <mickey@vanille-media.de>
 //
 import CornucopiaCore
+import CornucopiaStreams
 import Foundation
 import Swift_UDS
 
@@ -80,6 +81,12 @@ extension UDS {
             super.init()
             self.commandProvider = commandProvider ?? DefaultStringCommandProvider()
             self.commandQueue = StreamCommandQueue(input: inputStream, output: outputStream, termination: ">", delegate: self)
+        }
+
+        /// Create a GenericSerialAdapter by connecting to a URL.
+        public static func connect(url: URL, commandProvider: StringCommandProvider? = nil) async throws -> GenericSerialAdapter {
+            let streams = try await Cornucopia.Streams.connect(url: url)
+            return GenericSerialAdapter(inputStream: streams.0, outputStream: streams.1, commandProvider: commandProvider)
         }
         
         /// Connect to the bus with a given `busProtocol`. Use `.auto` unless you know exactly which kind of bus you are connecting to.

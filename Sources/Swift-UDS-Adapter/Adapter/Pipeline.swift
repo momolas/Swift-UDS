@@ -86,23 +86,26 @@ extension UDS {
                     let replyString = "\(reply.id, radix: .hex),\(reply.bytes, radix: .hex, toWidth: 2)\n"
 
                     self.logQ.async {
-                        try? logFile.write(contentsOf: requestString.data(using: .utf8)!)
-                        try? logFile.write(contentsOf: replyString.data(using: .utf8)!)
+                        if let data = requestString.data(using: .utf8) { try? logFile.write(contentsOf: data) }
+                        if let data = replyString.data(using: .utf8) { try? logFile.write(contentsOf: data) }
                     }
                     return reply
                 } catch {
                     let replyString = "ERROR: \(error)\n"
                     
                     self.logQ.async {
-                        try? logFile.write(contentsOf: requestString.data(using: .utf8)!)
-                        try? logFile.write(contentsOf: replyString.data(using: .utf8)!)
+                        if let data = requestString.data(using: .utf8) { try? logFile.write(contentsOf: data) }
+                        if let data = replyString.data(using: .utf8) { try? logFile.write(contentsOf: data) }
                     }
                     throw error
                 }
             }
             
-            let result = try await self.currentTask!.value
-            return result
+            if let task = self.currentTask {
+                return try await task.value
+            } else {
+                 throw UDS.Error.internal // Should theoretically not happen given the flow
+            }
         }
     }
 }

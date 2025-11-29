@@ -113,7 +113,7 @@ private final class StreamCommand {
             self.continuation.resume(throwing: StreamCommandQueue.Error.invalidEncoding)
             return
         }
-        let duration = String(format: "%04.0f ms", 1000 * (CFAbsoluteTimeGetCurrent() - self.timestamp!))
+        let duration = self.timestamp.map { String(format: "%04.0f ms", 1000 * (CFAbsoluteTimeGetCurrent() - $0)) } ?? "??? ms"
         logger.debug("Command processed [\(duration)]: '\(self.request.replacingOccurrences(of: "\r", with: "\\r").replacingOccurrences(of: "\n", with: "\\n"))' => '\(response.replacingOccurrences(of: "\r", with: "\\r").replacingOccurrences(of: "\n", with: "\\n"))'")
         self.continuation.resume(returning: response)
     }
@@ -139,7 +139,7 @@ public final class StreamCommandQueue: Thread {
     /// The delegate protocol
     public typealias Delegate = _StreamCommandQueueDelegate
 
-    var loop: RunLoop!
+    var loop: RunLoop?
     let input: InputStream
     let output: OutputStream
     let semaphore: DispatchSemaphore = .init(value: 0)
@@ -175,19 +175,19 @@ public final class StreamCommandQueue: Thread {
         
         self.input.delegate = self
         self.output.delegate = self
-        self.input.schedule(in: self.loop, forMode: .common)
-        self.output.schedule(in: self.loop, forMode: .common)
-        logger.trace("\(self.name!) entering runloop")
+        self.input.schedule(in: self.loop!, forMode: .common)
+        self.output.schedule(in: self.loop!, forMode: .common)
+        logger.trace("\(self.name ?? "unnamed thread") entering runloop")
         while !self.isCancelled {
-            self.loop.run(until: Date() + 1)
+            self.loop?.run(until: Date() + 1)
         }
-        logger.trace("\(self.name!) exited runloop")
+        logger.trace("\(self.name ?? "unnamed thread") exited runloop")
         if let activeCommand = activeCommand {
             activeCommand.resumeContinuation(throwing: .timeout)
             self.activeCommand = nil
         }
-        self.input.remove(from: self.loop, forMode: .common)
-        self.output.remove(from: self.loop, forMode: .common)
+        self.input.remove(from: self.loop!, forMode: .common)
+        self.output.remove(from: self.loop!, forMode: .common)
         self.input.delegate = nil
         self.output.delegate = nil
         self.input.close()
@@ -197,9 +197,13 @@ public final class StreamCommandQueue: Thread {
     /// Sends a string command over the stream and waits for a response.
     public func send(string: String, timeout: TimeInterval) async throws -> String {
 
+        guard let loop = self.loop else {
+             throw Error.shutdown
+        }
+
         let response: String = try await withCheckedThrowingContinuation { continuation in
             
-            self.loop.perform {
+            loop.perform {
                 precondition(self.activeCommand == nil, "Tried to send a command while another one has not been answered yet!")
                 
                 self.activeCommand = StreamCommand(string: string, timeout: timeout, termination: self.termination, continuation: continuation) {
@@ -219,7 +223,7 @@ public final class StreamCommandQueue: Thread {
     }
     
     deinit {
-        logger.trace("\(self.name!) destroyed")
+        logger.trace("\(self.name ?? "unnamed thread") destroyed")
     }
 }
 

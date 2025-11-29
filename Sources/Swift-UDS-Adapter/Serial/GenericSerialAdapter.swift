@@ -2,6 +2,7 @@
 // Swift-UDS. (C) Dr. Michael 'Mickey' Lauer <mickey@vanille-media.de>
 //
 import CornucopiaCore
+import CornucopiaStreams
 import Foundation
 import Swift_UDS
 

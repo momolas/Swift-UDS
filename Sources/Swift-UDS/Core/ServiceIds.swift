@@ -454,8 +454,10 @@ extension UDS {
                 case 4:
                     self.maxNumberOfBlockLength = Int(message.bytes[3] << 8*3) | Int(message.bytes[4] << 8*2) | Int(message.bytes[5] << 8*1) | Int(message.bytes[6] << 8*0)
                 default:
-                    //FIXME: Handle
-                    preconditionFailure("Not yet implemented")
+                    // This is a design limitation of the protocol _UDSConstructableFromMessage which cannot throw.
+                    // We log the error and set a safe default.
+                    print("Critical: Unsupported lengthFormatIdentifier in RequestDownloadResponse: \(message.bytes[2]). Defaulting to 0.")
+                    self.maxNumberOfBlockLength = 0
             }
         }
     }

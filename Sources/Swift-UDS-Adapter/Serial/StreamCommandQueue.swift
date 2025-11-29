@@ -232,7 +232,10 @@ private extension StreamCommandQueue {
         guard self.input.streamStatus == .open else { return self.input.open() }
         guard self.output.streamStatus == .open else { return self.output.open() }
         guard self.output.hasSpaceAvailable else { return }
-        guard let command = self.activeCommand else { fatalError() }
+        guard let command = self.activeCommand else {
+            logger.error("Internal inconsistency: Stream has space available, but no command is active.")
+            return
+        }
         guard command.canWrite else {
             logger.trace("command sent, waiting for response...")
             return

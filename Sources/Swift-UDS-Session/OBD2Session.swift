@@ -56,14 +56,16 @@ private extension UDS.OBD2Session {
     func readString(service: UDS.Service) async throws -> String {
         let response: UDS.OBD2Response = try await request(service: service)
         guard response.valueType == .string else { throw UDS.Error.unexpectedResult(string: "Expected String, but got \(response.valueType)") }
-        return response.value! as! String
+        guard let string = response.value as? String else { throw UDS.Error.unexpectedResult(string: "Expected String value, but got \(String(describing: response.value))") }
+        return string
     }
 
     /// Read a `Measurement` via the given `service`.
     func readMeasurement(service: UDS.Service) async throws -> Measurement<Unit> {
         let response: UDS.OBD2Response = try await request(service: service)
         guard response.valueType == .measurement else { throw UDS.Error.unexpectedResult(string: "Expected Measurement, but got \(response.valueType)") }
-        return response.value! as! Measurement<Unit>
+        guard let measurement = response.value as? Measurement<Unit> else { throw UDS.Error.unexpectedResult(string: "Expected Measurement value, but got \(String(describing: response.value))") }
+        return measurement
     }
 }
 

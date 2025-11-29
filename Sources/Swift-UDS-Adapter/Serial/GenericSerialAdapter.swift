@@ -349,7 +349,9 @@ extension UDS.GenericSerialAdapter {
         switch proto {
                 
             case .unknown, .auto:
-                fatalError("Invalid bus protocol \(proto)")
+                logger.error("Invalid bus protocol \(proto)")
+                self.updateState(.unsupportedProtocol)
+                return
 
             case .j1850_PWM, .j1850_VPWM:
                 self.busProtocolDecoder = UDS.J1850.Decoder()

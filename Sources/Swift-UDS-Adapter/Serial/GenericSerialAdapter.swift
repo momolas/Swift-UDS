@@ -81,6 +81,20 @@ extension UDS {
             self.commandProvider = commandProvider ?? DefaultStringCommandProvider()
             self.commandQueue = StreamCommandQueue(input: inputStream, output: outputStream, termination: ">", delegate: self)
         }
+
+        /// Create a GenericSerialAdapter by connecting to a host and port (TCP).
+        public static func connect(host: String, port: Int, commandProvider: StringCommandProvider? = nil) async throws -> GenericSerialAdapter {
+            var inputStream: InputStream?
+            var outputStream: OutputStream?
+
+            Stream.getStreamsToHost(withName: host, port: port, inputStream: &inputStream, outputStream: &outputStream)
+
+            guard let input = inputStream, let output = outputStream else {
+                throw UDS.Error.disconnected // Or a more specific error like "ConnectionFailed"
+            }
+
+            return GenericSerialAdapter(inputStream: input, outputStream: output, commandProvider: commandProvider)
+        }
         
         /// Connect to the bus with a given `busProtocol`. Use `.auto` unless you know exactly which kind of bus you are connecting to.
         public override func connect(via busProtocol: BusProtocol = .auto) {
@@ -349,7 +363,9 @@ extension UDS.GenericSerialAdapter {
         switch proto {
                 
             case .unknown, .auto:
-                fatalError("Invalid bus protocol \(proto)")
+                logger.error("Invalid bus protocol \(proto)")
+                self.updateState(.unsupportedProtocol)
+                return
 
             case .j1850_PWM, .j1850_VPWM:
                 self.busProtocolDecoder = UDS.J1850.Decoder()

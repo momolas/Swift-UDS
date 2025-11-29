@@ -83,10 +83,18 @@ extension UDS {
             self.commandQueue = StreamCommandQueue(input: inputStream, output: outputStream, termination: ">", delegate: self)
         }
 
-        /// Create a GenericSerialAdapter by connecting to a URL.
-        public static func connect(url: URL, commandProvider: StringCommandProvider? = nil) async throws -> GenericSerialAdapter {
-            let streams = try await Cornucopia.Streams.connect(url: url)
-            return GenericSerialAdapter(inputStream: streams.0, outputStream: streams.1, commandProvider: commandProvider)
+        /// Create a GenericSerialAdapter by connecting to a host and port (TCP).
+        public static func connect(host: String, port: Int, commandProvider: StringCommandProvider? = nil) async throws -> GenericSerialAdapter {
+            var inputStream: InputStream?
+            var outputStream: OutputStream?
+
+            Stream.getStreamsToHost(withName: host, port: port, inputStream: &inputStream, outputStream: &outputStream)
+
+            guard let input = inputStream, let output = outputStream else {
+                throw UDS.Error.disconnected // Or a more specific error like "ConnectionFailed"
+            }
+
+            return GenericSerialAdapter(inputStream: input, outputStream: output, commandProvider: commandProvider)
         }
         
         /// Connect to the bus with a given `busProtocol`. Use `.auto` unless you know exactly which kind of bus you are connecting to.

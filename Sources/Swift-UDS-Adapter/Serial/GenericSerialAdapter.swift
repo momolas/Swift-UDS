@@ -2,6 +2,7 @@
 // Swift-UDS. (C) Dr. Michael 'Mickey' Lauer <mickey@vanille-media.de>
 //
 import CornucopiaCore
+import CornucopiaStreams
 import Foundation
 import Swift_UDS
 
@@ -24,8 +25,8 @@ extension UDS {
     /// If you want to be on the safe side, create a `Pipeline` and use this for all communication.
     public final class GenericSerialAdapter: BaseAdapter {
                     
-        private var commandProvider: StringCommandProvider!
-        private var commandQueue: StreamCommandQueue!
+        private var commandProvider: StringCommandProvider
+        private var commandQueue: StreamCommandQueue
         
         private var header = Header(0x7DF) // start out with OBD2 broadcast header
         private var replyHeader = Header(0x000) // none set
@@ -34,10 +35,10 @@ extension UDS {
         private var desiredBusProtocol: BusProtocol = .unknown
         private var negotiatedBusProtocol: BusProtocol = .unknown
         public internal(set) var busProtocolEncoder: BusProtocolEncoder? = nil {
-            didSet { logger.debug("BusProtocolEncoder now \(self.busProtocolEncoder!)") }
+            didSet { logger.debug("BusProtocolEncoder now \(String(describing: self.busProtocolEncoder))") }
         }
         public internal(set) var busProtocolDecoder: BusProtocolDecoder? = nil {
-            didSet { logger.debug("BusProtocolDecoder now \(self.busProtocolDecoder!)") }
+            didSet { logger.debug("BusProtocolDecoder now \(String(describing: self.busProtocolDecoder))") }
         }
 
         public enum ICType: String {
@@ -77,9 +78,24 @@ extension UDS {
 
         /// Initialize an adapter given a pair of streams and an optional `commandProvider`. The default one should be good for almost all use cases.
         public init(inputStream: InputStream, outputStream: OutputStream, commandProvider: StringCommandProvider? = nil) {
-            super.init()
             self.commandProvider = commandProvider ?? DefaultStringCommandProvider()
-            self.commandQueue = StreamCommandQueue(input: inputStream, output: outputStream, termination: ">", delegate: self)
+            self.commandQueue = StreamCommandQueue(input: inputStream, output: outputStream, termination: ">")
+            super.init()
+            self.commandQueue.delegate = self
+        }
+
+        /// Create a GenericSerialAdapter by connecting to a host and port (TCP).
+        public static func connect(host: String, port: Int, commandProvider: StringCommandProvider? = nil) async throws -> GenericSerialAdapter {
+            var inputStream: InputStream?
+            var outputStream: OutputStream?
+
+            Stream.getStreamsToHost(withName: host, port: port, inputStream: &inputStream, outputStream: &outputStream)
+
+            guard let input = inputStream, let output = outputStream else {
+                throw UDS.Error.disconnected // Or a more specific error like "ConnectionFailed"
+            }
+
+            return GenericSerialAdapter(inputStream: input, outputStream: output, commandProvider: commandProvider)
         }
         
         /// Connect to the bus with a given `busProtocol`. Use `.auto` unless you know exactly which kind of bus you are connecting to.
@@ -349,7 +365,9 @@ extension UDS.GenericSerialAdapter {
         switch proto {
                 
             case .unknown, .auto:
-                fatalError("Invalid bus protocol \(proto)")
+                logger.error("Invalid bus protocol \(proto)")
+                self.updateState(.unsupportedProtocol)
+                return
 
             case .j1850_PWM, .j1850_VPWM:
                 self.busProtocolDecoder = UDS.J1850.Decoder()

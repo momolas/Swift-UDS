@@ -89,7 +89,10 @@ extension UDS {
         public let dtc: [UDS.OBD2.DTC]
 
         public init(message: UDS.Message) {
-            guard message.bytes.count > 1 else { fatalError() }
+            guard message.bytes.count > 1 else {
+                self.dtc = []
+                return
+            }
             /*
              CAN-protocols deliver the actual number of DTC in the first byte of the payload (after 0x43 for the positive indication of service 0x03).
              From here, we have no idea about the bus protocol that transported this message, hence we need some heuristics:
@@ -348,7 +351,11 @@ extension UDS {
         public let dtc: [UDS.DTC]
 
         public init(message: UDS.Message) {
-            guard message.bytes.count > 2 else { fatalError() }
+            guard message.bytes.count > 2 else {
+                self.statusAvailabilityMask = UDS.DTC.StatusMask(rawValue: 0)
+                self.dtc = []
+                return
+            }
 
             self.statusAvailabilityMask = UDS.DTC.StatusMask(rawValue: message.bytes[2])
             let dtcStartOffset = 3
@@ -447,8 +454,8 @@ extension UDS {
                 case 4:
                     self.maxNumberOfBlockLength = Int(message.bytes[3] << 8*3) | Int(message.bytes[4] << 8*2) | Int(message.bytes[5] << 8*1) | Int(message.bytes[6] << 8*0)
                 default:
-                    //FIXME: Handle
-                    preconditionFailure("Not yet implemented")
+                    // Fallback to avoid crash
+                    self.maxNumberOfBlockLength = 0
             }
         }
     }

@@ -38,7 +38,7 @@ extension UDS {
                 case .iso9141_2:
                     return "486B10"
                 default:
-                    preconditionFailure("Not yet implemented")
+                    return ""
             }
         }
 

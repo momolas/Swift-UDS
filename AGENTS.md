@@ -52,10 +52,35 @@ You are a **Senior iOS Engineer**, specializing in SwiftUI, SwiftData, and relat
 - When making a `ForEach` out of an `enumerated` sequence, do not convert it to an array first. So, prefer `ForEach(x.enumerated(), id: \.element.id)` instead of `ForEach(Array(x.enumerated()), id: \.element.id)`.
 - When hiding scroll view indicators, use the `.scrollIndicators(.hidden)` modifier rather than using `showsIndicators: false` in the scroll view initializer.
 - Use the newest ScrollView APIs for item scrolling and positioning (e.g. `ScrollPosition` and `defaultScrollAnchor`); avoid older scrollView APIs like ScrollViewReader.
-- Place view logic into view models or similar, so it can be tested.
+- Place view logic into view models or domain stores when unit testing is required.
 - Avoid `AnyView` unless it is absolutely required.
 - Avoid specifying hard-coded values for padding and stack spacing unless requested.
 - Avoid using UIKit colors in SwiftUI code.
+
+
+## Architecture guidelines
+
+- **Pragmatic Modern Architecture**: Favor Vanilla MV (Model-View) for straightforward, display-only, or CRUD views; reserve dedicated ViewModels (`@MainActor @Observable`) for complex state machines and heavy orchestration.
+- **No Pass-through ViewModels**: Do not create a ViewModel if it only forwards properties and methods from a service into the view. Inject the service via `@Environment` or use SwiftData `@Query` directly in the view.
+- **When to use ViewModels**: Introduce a ViewModel when an interactive screen coordinates complex multi-step async operations, intricate playback/scrubbing states (e.g. video/audio player), or rich formatting and validation that must be unit-tested in isolation without SwiftUI dependencies.
+- **Service & Domain Layer**: Keep I/O, networking, streaming, and background tasks in dedicated `actor` or `@Observable` domain services (inside a `Services/` or `Domain/` directory).
+- **Navigation**: Decouple navigation using modern `NavigationStack`, `NavigationPath`, or a lightweight Coordinator pattern rather than tightly coupling views.
+- **Native over Third-Party**: Stick to 100% native Swift & SwiftUI; avoid introducing heavy external architecture frameworks (like TCA or VIPER) unless explicitly requested.
+
+
+## Swift Testing instructions
+
+- Use the modern **Swift Testing** framework (`import Testing`) for all new unit and integration tests.
+- Never use legacy `XCTest` (`XCTestCase`, `XCTAssertEqual`, etc.) unless writing UI tests with `XCUIApplication`.
+- Declare test suites as `struct` or free functions, never as `class: XCTestCase`.
+- Mark test functions with `@Test` instead of prefixing their names with `test`.
+- Use `#expect()` for standard, non-fatal assertions so all failures are reported in a single run.
+- Use `try #require()` for critical pre-conditions and optional unwrapping that must halt the test immediately on failure.
+- Prefer parameterized tests using `@Test(arguments: [...])` over `for` loops inside test functions.
+- Use `await confirmation { confirm in ... }` instead of `XCTestExpectation` and `waitForExpectations`.
+- Control test metadata and execution with traits: `.tags(...)`, `.timeLimit(...)`, `.disabled(...)`, and `.enabled(if: ...)`.
+- Maintain strict actor isolation: annotate test functions with `@MainActor` when asserting against `@MainActor` ViewModels and state.
+
 
 
 ## SwiftData instructions
